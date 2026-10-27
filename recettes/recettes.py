@@ -5,6 +5,7 @@ Usage :
     python recettes/recettes.py fetch --login MON_PSEUDO [--collection Recettes]
     python recettes/recettes.py collections --login MON_PSEUDO
     python recettes/recettes.py build
+    python recettes/recettes.py signet      # version iPhone : signet Safari (voir README)
 
 Les données sont stockées dans recettes/data/ (recettes.json + miniatures),
 la page générée est recettes/carnet.html : un seul fichier, utilisable hors ligne.
@@ -17,6 +18,7 @@ import os
 import re
 import sys
 import unicodedata
+import urllib.parse
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -30,6 +32,8 @@ DATA_DIR = HERE / "data"
 THUMBS_DIR = DATA_DIR / "thumbs"
 DB_FILE = DATA_DIR / "recettes.json"
 TEMPLATE = HERE / "template.html"
+SIGNET_SRC = HERE / "signet.src.js"
+SIGNET_OUT = HERE / "signet.txt"
 OUTPUT = HERE / "carnet.html"
 
 # Mots-clés recherchés dans les légendes -> étiquette affichée.
@@ -257,6 +261,20 @@ def cmd_build(args):
     print(f"{len(recipes)} recettes -> {out} ({os.path.getsize(out) / 1e6:.1f} Mo)")
 
 
+def cmd_signet(args):
+    tags = {"ingredients": INGREDIENTS, "categories": CATEGORIES, "regimes": DIETS}
+    src = SIGNET_SRC.read_text(encoding="utf-8")
+    src = src.replace("/*__TAGS__*/{}", json.dumps(tags, ensure_ascii=False))
+    lines = [line.strip() for line in src.splitlines()]
+    src = "\n".join(line for line in lines if line and not line.startswith("//"))
+    # Encodage minimal pour une URL javascript: (Safari décode avant d'exécuter).
+    code = "javascript:" + "".join(
+        c if c.isascii() and (c.isalnum() or c in "()[]{};:,.=+-*/!?&|<>_$'\"@~^") else urllib.parse.quote(c)
+        for c in src)
+    SIGNET_OUT.write_text(code, encoding="utf-8")
+    print(f"Signet -> {SIGNET_OUT} ({len(code) / 1000:.0f} ko)")
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -270,8 +288,9 @@ def main():
     f.add_argument("--max", type=int, help="nombre maximum de nouveaux posts (pour tester)")
     b = sub.add_parser("build")
     b.add_argument("--output", help=f"fichier HTML de sortie (défaut : {OUTPUT.name})")
+    sub.add_parser("signet", help="génère le signet Safari (iPhone) dans signet.txt")
     args = p.parse_args()
-    {"fetch": cmd_fetch, "collections": cmd_collections, "build": cmd_build}[args.cmd](args)
+    {"fetch": cmd_fetch, "collections": cmd_collections, "build": cmd_build, "signet": cmd_signet}[args.cmd](args)
 
 
 if __name__ == "__main__":
