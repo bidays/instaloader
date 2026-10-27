@@ -34,6 +34,8 @@ DB_FILE = DATA_DIR / "recettes.json"
 TEMPLATE = HERE / "template.html"
 SIGNET_SRC = HERE / "signet.src.js"
 SIGNET_OUT = HERE / "signet.txt"
+APP_SRC = HERE / "app.src.html"
+APP_OUT = HERE / "app.html"
 OUTPUT = HERE / "carnet.html"
 
 # Mots-clés recherchés dans les légendes -> étiquette affichée.
@@ -275,6 +277,14 @@ def cmd_signet(args):
     print(f"Signet -> {SIGNET_OUT} ({len(code) / 1000:.0f} ko)")
 
 
+def cmd_app(args):
+    tags = {"ingredients": INGREDIENTS, "categories": CATEGORIES, "regimes": DIETS}
+    html = APP_SRC.read_text(encoding="utf-8").replace("/*__TAGS__*/{}", json.dumps(tags, ensure_ascii=False))
+    out = Path(args.output) if args.output else APP_OUT
+    out.write_text(html, encoding="utf-8")
+    print(f"App partagée -> {out}")
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -289,8 +299,10 @@ def main():
     b = sub.add_parser("build")
     b.add_argument("--output", help=f"fichier HTML de sortie (défaut : {OUTPUT.name})")
     sub.add_parser("signet", help="génère le signet Safari (iPhone) dans signet.txt")
+    a = sub.add_parser("app", help="génère la page de l'app partagée « Nos recettes »")
+    a.add_argument("--output")
     args = p.parse_args()
-    {"fetch": cmd_fetch, "collections": cmd_collections, "build": cmd_build, "signet": cmd_signet}[args.cmd](args)
+    {"fetch": cmd_fetch, "collections": cmd_collections, "build": cmd_build, "signet": cmd_signet, "app": cmd_app}[args.cmd](args)
 
 
 if __name__ == "__main__":

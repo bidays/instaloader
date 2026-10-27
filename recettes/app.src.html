@@ -1,0 +1,472 @@
+<title>Nos recettes</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600&display=swap">
+<style>
+/* Carnet en grille de fiches ; une feuille du bas pour lire, ajouter ou importer. */
+:root {
+  --bg: #f6f7f2; --surface: #ffffff; --fg: #1f261d; --muted: #6b7466; --line: #e1e5da;
+  --accent: #34623a; --accent-fg: #ffffff; --soft: #e5eedf; --sun: #e3a21a; --sun-soft: #fbefd2; --danger: #b3261e;
+  --display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body: "Figtree", -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #141813; --surface: #1d231b; --fg: #eef2ea; --muted: #9aa494; --line: #2f382c;
+  --accent: #8cc58f; --accent-fg: #102012; --soft: #253423; --sun: #f0b93f; --sun-soft: #3a2f14; --danger: #ff8a80; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #141813; --surface: #1d231b; --fg: #eef2ea; --muted: #9aa494; --line: #2f382c;
+  --accent: #8cc58f; --accent-fg: #102012; --soft: #253423; --sun: #f0b93f; --sun-soft: #3a2f14; --danger: #ff8a80; color-scheme: dark }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--fg); font: 15px/1.5 var(--body); }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+.gutter { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); padding-block: 12px 10px; display: grid; gap: 10px; }
+.row { display: flex; gap: 8px; align-items: center; }
+h1 { font: 700 24px/1.1 var(--display); margin: 0; flex: 1; letter-spacing: -0.01em; }
+h2 { font: 700 21px/1.2 var(--display); margin: 0; text-wrap: balance; }
+h3 { font: 600 13px/1.2 var(--body); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 9px 12px; white-space: nowrap; }
+.primary { border: 0; background: var(--accent); color: var(--accent-fg); border-radius: 12px; padding: 10px 14px; font-weight: 600; white-space: nowrap; text-decoration: none; display: inline-block; }
+.primary:disabled { opacity: .5; }
+.danger { color: var(--danger); }
+input[type=search], input[type=url], input[type=text], textarea, select { width: 100%; border: 1px solid var(--line); background: var(--surface); border-radius: 12px; padding: 10px 12px; font-size: 16px; }
+textarea { resize: vertical; min-height: 70px; }
+.chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin-inline: -4px; padding-inline: 4px; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { border: 0; background: var(--soft); color: var(--fg); border-radius: 999px; padding: 6px 12px; font-size: 13px; white-space: nowrap; }
+.chip.on { background: var(--accent); color: var(--accent-fg); }
+.chip .n { opacity: .6; font-variant-numeric: tabular-nums; margin-left: 3px; }
+.sep { width: 1px; background: var(--line); flex: none; }
+main { padding-block: 14px 48px; max-width: 1100px; margin: 0 auto; }
+.meta { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
+.banner { background: var(--sun-soft); border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; text-align: left; padding: 0; display: flex; flex-direction: column; }
+.thumb { width: 100%; max-width: 100%; aspect-ratio: 1; object-fit: cover; display: grid; place-items: center; font-size: 46px; background: var(--soft); position: relative; }
+.thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.marks { position: absolute; top: 8px; right: 8px; display: flex; gap: 4px; }
+.mark { background: var(--surface); border-radius: 999px; font-size: 12px; padding: 2px 7px; color: var(--fg); }
+.card .t { padding: 9px 11px 2px; font-weight: 600; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card .a { padding: 0 11px 11px; color: var(--muted); font-size: 12px; }
+.empty { display: grid; gap: 14px; max-width: 520px; margin: 24px auto; text-align: left; }
+.way { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; display: grid; gap: 6px; }
+.sheet { position: fixed; inset: 0; z-index: 20; background: rgba(10, 14, 9, .5); display: flex; align-items: flex-end; justify-content: center; }
+.panel { background: var(--bg); width: 100%; max-width: 720px; max-height: calc(100% - env(safe-area-inset-top, 0px) - 12px); overflow-y: auto; border-radius: 20px 20px 0 0;
+         padding-block: 16px calc(20px + env(safe-area-inset-bottom, 0px)); display: grid; gap: 16px; align-content: start; overscroll-behavior: contain; }
+@media (min-width: 760px) { .sheet { align-items: center; } .panel { border-radius: 20px; max-height: 90%; } }
+.p-top { display: flex; gap: 10px; align-items: flex-start; }
+.p-top h2 { flex: 1; min-width: 0; }
+.hero { width: 100%; max-width: 100%; aspect-ratio: 4/3; object-fit: cover; border-radius: 14px; display: block; }
+.tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.tags span { background: var(--soft); border-radius: 999px; padding: 2px 9px; font-size: 12px; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.on-fav { background: var(--sun-soft); border-color: var(--sun); }
+.on-ok { background: var(--soft); border-color: var(--accent); }
+ul.ing { list-style: none; padding: 0; margin: 0; display: grid; gap: 2px; }
+ul.ing label { display: flex; gap: 10px; align-items: baseline; padding: 6px 0; border-bottom: 1px dashed var(--line); }
+ul.ing input { width: 18px; height: 18px; accent-color: var(--accent); flex: none; transform: translateY(3px); }
+ul.ing input:checked + span { color: var(--muted); text-decoration: line-through; }
+ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; display: grid; gap: 12px; }
+ol.steps li { counter-increment: s; display: grid; grid-template-columns: 28px 1fr; gap: 10px; }
+ol.steps li::before { content: counter(s); font: 700 14px/28px var(--display); text-align: center; height: 28px; border-radius: 50%; background: var(--soft); color: var(--accent); }
+ol.steps li > span { min-width: 0; padding-top: 3px; }
+details summary { cursor: pointer; color: var(--muted); }
+.caption { white-space: pre-wrap; word-wrap: break-word; margin-top: 8px; }
+.field { display: grid; gap: 6px; }
+.field > span { font-weight: 600; font-size: 14px; }
+.hint { color: var(--muted); font-size: 13px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.shots { display: flex; gap: 6px; flex-wrap: wrap; }
+.shots img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; }
+.status { font-size: 14px; color: var(--muted); min-height: 1.4em; }
+.status.err { color: var(--danger); }
+.confirm { background: var(--surface); border: 1px solid var(--danger); border-radius: 12px; padding: 12px; display: grid; gap: 8px; }
+@media (prefers-reduced-motion: no-preference) { .panel { animation: up .18s ease-out; } @keyframes up { from { transform: translateY(24px); opacity: .6; } } }
+</style>
+
+<header class="gutter">
+  <div class="row">
+    <h1>Nos recettes</h1>
+    <button class="btn" id="rand" type="button" aria-label="Une idée au hasard">🎲</button>
+    <button class="primary" id="add" type="button">＋ Ajouter</button>
+  </div>
+  <input id="q" type="search" placeholder="Rechercher : poulet, tiramisu, sans four…" autocomplete="off" aria-label="Rechercher une recette">
+  <div class="chips" id="chips"></div>
+</header>
+<main class="gutter">
+  <div class="banner" id="banner" hidden></div>
+  <p class="meta" id="count"></p>
+  <div class="grid" id="grid"></div>
+  <p class="meta" style="margin-top:24px"><button class="btn" type="button" id="import">Importer depuis Instagram…</button></p>
+  <section class="empty" id="empty" hidden>
+    <h2>Votre carnet est vide</h2>
+    <div class="way"><b>Ajouter une recette depuis Instagram</b><span class="hint">Dans l'app Instagram : capture d'écran de la recette, puis Partager → Copier le lien. Ici : « Ajouter », colle le lien, choisis la capture, Claude remplit la fiche.</span></div>
+    <div class="way"><b>Importer toute la collection d'un coup</b><span class="hint">Avec le signet Safari sur instagram.com, touche « Exporter », puis reviens ici.</span><button class="btn" type="button" id="import-empty">Importer…</button></div>
+  </section>
+</main>
+<div class="sheet" id="sheet" hidden><div class="panel gutter" id="panel" role="dialog" aria-modal="true"></div></div>
+
+<script>
+const TAGS = /*__TAGS__*/{};
+const CATEGORIES = ["Plat", "Dessert", "Entrée / Salade", "Apéro", "Petit-déj", "Boisson"];
+const EMOJI = { "Plat": "🍲", "Dessert": "🍰", "Entrée / Salade": "🥗", "Apéro": "🫒", "Petit-déj": "🥞", "Boisson": "🍹" };
+
+const $ = id => document.getElementById(id);
+const el = (tag, props = {}, ...kids) => {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) k.includes("-") ? e.setAttribute(k, v) : (e[k] = v);
+  e.append(...kids.filter(k => k != null));
+  return e;
+};
+const norm = s => (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/œ/g, "oe");
+const findTags = (text, table) => { const n = norm(text); return Object.keys(table || {}).filter(t => table[t].some(w => new RegExp("\\b" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).test(n))); };
+const imgUrl = id => id ? "/_blob/" + id : "";
+
+let db = null, sample = null, assets = null, canImages = false;
+let recipes = [];
+let pendingOpen = ""; // fiche à ouvrir dès que la base l'a renvoyée
+const state = { q: "", tags: new Set(), fav: false, tested: false, todo: false };
+
+// ---------- Données ----------
+function computeTags(r) {
+  const text = [r.titre, (r.ingredients || []).join("\n"), r.legende].join("\n");
+  const cats = r.categorie ? [r.categorie] : findTags(text, TAGS.categories).slice(0, 2);
+  return { cats, ings: findTags(text, TAGS.ingredients), diets: findTags(text, TAGS.regimes) };
+}
+function prepare(doc) {
+  const r = { id: doc.id, ...doc.data() };
+  r._t = computeTags(r);
+  r._s = norm([r.titre, "@" + (r.auteur || ""), (r.ingredients || []).join(" "), (r.etapes || []).join(" "), r.legende, r.note, ...r._t.cats, ...r._t.ings, ...r._t.diets].join(" "));
+  return r;
+}
+
+async function boot() {
+  try { db = await claude.use("db"); } catch (e) { db = null; }
+  if (!db) {
+    showBanner("Ouvre cette page depuis claude.ai, connecté à ton compte, pour voir et ajouter vos recettes.");
+    renderAll();
+    return;
+  }
+  db.collection("recettes").orderBy("ajoute_le", "desc").limit(1000).onSnapshot(snap => {
+    recipes = snap.docs.map(prepare);
+    renderAll();
+    if (pendingOpen && recipes.some(x => x.id === pendingOpen)) { const id = pendingOpen; pendingOpen = ""; openDetail(id); return; }
+    const open = $("panel").dataset.recipe;
+    if (open && !$("sheet").hidden) { const r = recipes.find(x => x.id === open); if (r) refreshDetail(r); }
+  }, err => showBanner(err.code === "revoked" ? "L'accès à ce carnet a changé." : "Le carnet n'a pas pu se charger. Recharge la page."));
+  claude.use("sample").then(s => { sample = s; if (s) s.limits().then(l => { canImages = !!(l && l.images); }).catch(() => {}); });
+  claude.use("assets").then(a => { assets = a; });
+}
+function showBanner(text) { $("banner").textContent = text; $("banner").hidden = false; }
+
+// ---------- Liste ----------
+function results() {
+  const words = norm(state.q).split(/\s+/).filter(Boolean);
+  return recipes.filter(r =>
+    (!state.fav || r.fav) && (!state.tested || r.testee) && (!state.todo || !r.testee) &&
+    [...state.tags].every(t => r._t.cats.includes(t) || r._t.ings.includes(t) || r._t.diets.includes(t)) &&
+    words.every(w => r._s.includes(w)));
+}
+
+function renderChips() {
+  const count = {};
+  recipes.forEach(r => [...r._t.cats, ...r._t.diets, ...r._t.ings].forEach(t => count[t] = (count[t] || 0) + 1));
+  const box = $("chips");
+  box.replaceChildren();
+  const chip = (label, n, on, toggle) => {
+    const b = el("button", { type: "button", className: "chip" + (on ? " on" : "") }, label, n != null ? el("span", { className: "n", textContent: n }) : null);
+    b.onclick = () => { toggle(); renderAll(); };
+    box.append(b);
+  };
+  chip("♥ Favoris", recipes.filter(r => r.fav).length, state.fav, () => state.fav = !state.fav);
+  chip("✓ Testées", recipes.filter(r => r.testee).length, state.tested, () => { state.tested = !state.tested; state.todo = false; });
+  chip("À tester", recipes.filter(r => !r.testee).length, state.todo, () => { state.todo = !state.todo; state.tested = false; });
+  for (const key of ["cats", "diets", "ings"]) {
+    const tags = [...new Set(recipes.flatMap(r => r._t[key]))].sort((a, b) => count[b] - count[a]);
+    if (!tags.length) continue;
+    box.append(el("span", { className: "sep" }));
+    tags.forEach(t => chip(t, count[t], state.tags.has(t), () => state.tags.has(t) ? state.tags.delete(t) : state.tags.add(t)));
+  }
+}
+
+function card(r) {
+  const thumb = el("div", { className: "thumb" });
+  if (r.image) thumb.append(el("img", { src: imgUrl(r.image), alt: "", loading: "lazy" }));
+  else thumb.append(EMOJI[r._t.cats[0]] || "🍽️");
+  const marks = el("div", { className: "marks" });
+  if (r.fav) marks.append(el("span", { className: "mark", textContent: "♥" }));
+  if (r.testee) marks.append(el("span", { className: "mark", textContent: "✓" }));
+  thumb.append(marks);
+  const b = el("button", { type: "button", className: "card" }, thumb,
+    el("div", { className: "t", textContent: r.titre || "Recette" }),
+    el("div", { className: "a", textContent: [r.auteur && "@" + r.auteur, r.duree].filter(Boolean).join(" · ") || " " }));
+  b.onclick = () => openDetail(r.id);
+  return b;
+}
+
+function renderAll() {
+  renderChips();
+  const list = results();
+  $("grid").replaceChildren(...list.map(card));
+  $("empty").hidden = !(db && recipes.length === 0);
+  $("count").textContent = recipes.length ? list.length + " recette" + (list.length > 1 ? "s" : "") + (list.length !== recipes.length ? " sur " + recipes.length : "") : "";
+}
+
+// ---------- Feuille ----------
+function openSheet(build, recipeId = "") {
+  $("panel").dataset.recipe = recipeId;
+  $("panel").replaceChildren(...build());
+  $("sheet").hidden = false;
+  $("panel").scrollTop = 0;
+  document.body.style.overflow = "hidden";
+}
+function closeSheet() { $("sheet").hidden = true; $("panel").dataset.recipe = ""; document.body.style.overflow = ""; }
+$("sheet").addEventListener("click", e => { if (e.target === $("sheet")) closeSheet(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("sheet").hidden) closeSheet(); });
+const sheetTop = (title) => el("div", { className: "p-top" }, el("h2", { textContent: title }), el("button", { type: "button", className: "btn", textContent: "Fermer", onclick: closeSheet }));
+
+async function save(id, patch, statusEl) {
+  try { await db.doc("recettes/" + id).update(patch); return true; }
+  catch (e) { if (statusEl) { statusEl.textContent = e.code === "invalid_argument" ? "Tu n'as que la lecture sur ce carnet." : "Pas enregistré, réessaie."; statusEl.className = "status err"; } return false; }
+}
+
+// ---------- Détail ----------
+function openDetail(id) { const r = recipes.find(x => x.id === id); if (r) openSheet(() => detail(r), id); }
+function refreshDetail(r) {
+  const note = $("note");
+  if (note && document.activeElement === note) return; // ne pas écraser une note en cours de frappe
+  const y = $("panel").scrollTop;
+  $("panel").replaceChildren(...detail(r));
+  $("panel").scrollTop = y;
+}
+
+function detail(r) {
+  const out = [sheetTop(r.titre || "Recette")];
+  if (r.image) out.push(el("img", { className: "hero", src: imgUrl(r.image), alt: "" }));
+  const meta = [r.auteur && "@" + r.auteur, r.duree && "⏱ " + r.duree, r.portions && "👥 " + r.portions].filter(Boolean).join(" · ");
+  if (meta) out.push(el("p", { className: "meta", textContent: meta, style: "margin:0" }));
+  const tags = [...r._t.cats, ...r._t.diets, ...r._t.ings];
+  if (tags.length) out.push(el("div", { className: "tags" }, ...tags.map(t => el("span", { textContent: t }))));
+
+  const status = el("div", { className: "status", "aria-live": "polite" });
+  const fav = el("button", { type: "button", className: "btn" + (r.fav ? " on-fav" : ""), textContent: r.fav ? "♥ Favori" : "♡ Favori" });
+  fav.onclick = () => save(r.id, { fav: !r.fav }, status);
+  const ok = el("button", { type: "button", className: "btn" + (r.testee ? " on-ok" : ""), textContent: r.testee ? "✓ Testée" : "Pas encore testée" });
+  ok.onclick = () => save(r.id, { testee: !r.testee }, status);
+  const actions = el("div", { className: "actions" }, fav, ok);
+  if (r.url) {
+    actions.append(el("a", { className: "primary", href: r.url, target: "_blank", rel: "noopener", textContent: "Voir sur Instagram" }));
+    const copy = el("button", { type: "button", className: "btn", textContent: "Copier le lien" });
+    copy.onclick = async () => { try { await navigator.clipboard.writeText((r.titre ? r.titre + "\n" : "") + r.url); status.textContent = "Lien copié."; } catch (e) { status.textContent = r.url; } };
+    actions.append(copy);
+  }
+  out.push(actions, status);
+
+  if ((r.ingredients || []).length) {
+    out.push(el("section", {}, el("h3", { textContent: "Ingrédients" + (r.portions ? " · " + r.portions : "") }),
+      el("ul", { className: "ing" }, ...r.ingredients.map(i => el("li", {}, el("label", {}, el("input", { type: "checkbox" }), el("span", { textContent: i })))))));
+  }
+  if ((r.etapes || []).length) {
+    out.push(el("section", {}, el("h3", { textContent: "Étapes" }), el("ol", { className: "steps" }, ...r.etapes.map(s => el("li", {}, el("span", { textContent: s }))))));
+  }
+  if (!(r.ingredients || []).length && r.legende && sample) {
+    const b = el("button", { type: "button", className: "primary", textContent: "Mettre en fiche avec Claude" });
+    const st = el("div", { className: "status" });
+    b.onclick = async () => {
+      b.disabled = true; st.className = "status"; st.textContent = "Claude lit la légende…";
+      try {
+        const x = await extract([], r.legende);
+        await db.doc("recettes/" + r.id).update({ titre: x.titre || r.titre, ingredients: x.ingredients, etapes: x.etapes, duree: x.duree, portions: x.portions, categorie: x.categorie || r.categorie || "" });
+      } catch (e) { st.className = "status err"; st.textContent = sampleError(e); b.disabled = false; }
+    };
+    out.push(el("section", { className: "way" }, el("span", { className: "hint", textContent: "Cette recette n'a que la légende Instagram. Claude peut en tirer la liste d'ingrédients et les étapes." }), b, st));
+  }
+  if (r.legende) {
+    const d = el("details", {}, el("summary", { textContent: "Légende Instagram d'origine" }), el("div", { className: "caption", textContent: r.legende }));
+    if (!(r.ingredients || []).length) d.open = true;
+    out.push(d);
+  }
+
+  const noteStatus = el("div", { className: "status" });
+  const note = el("textarea", { id: "note", value: r.note || "", placeholder: "Testée le…, à refaire avec moins de sucre…" });
+  let t;
+  const flush = () => { clearTimeout(t); if (note.value !== (r.note || "")) save(r.id, { note: note.value }, noteStatus).then(okk => { if (okk) noteStatus.textContent = "Note enregistrée."; }); };
+  note.oninput = () => { clearTimeout(t); t = setTimeout(flush, 1200); };
+  note.onblur = flush;
+  out.push(el("label", { className: "field" }, el("span", { textContent: "Nos notes" }), note, noteStatus));
+
+  const del = el("button", { type: "button", className: "btn danger", textContent: "Supprimer" });
+  const foot = el("div", { className: "actions" }, el("button", { type: "button", className: "btn", textContent: "Modifier", onclick: () => openSheet(() => form(r), r.id) }), del);
+  del.onclick = () => {
+    const box = el("div", { className: "confirm" }, el("span", { textContent: "Supprimer « " + (r.titre || "cette recette") + " » pour vous deux ?" }),
+      el("div", { className: "actions" },
+        el("button", { type: "button", className: "btn danger", textContent: "Oui, supprimer", onclick: async () => { try { await db.doc("recettes/" + r.id).delete(); closeSheet(); } catch (e) { status.textContent = "Suppression impossible."; } } }),
+        el("button", { type: "button", className: "btn", textContent: "Annuler", onclick: () => box.remove() })));
+    foot.after(box);
+  };
+  out.push(foot);
+  return out;
+}
+
+// ---------- Claude ----------
+function sampleError(e) {
+  return ({ not_granted: "Claude n'a pas été autorisé pour cette page.", rate_limited: "Trop de demandes, réessaie dans une minute.",
+            invalid_json: "Claude n'a pas réussi à lire la recette. Réessaie ou remplis la fiche à la main.", images_unavailable: "Les images ne peuvent pas être envoyées ici : colle plutôt le texte." })[e && e.code] || "Échec de la lecture. Réessaie ou remplis la fiche à la main.";
+}
+async function extract(images, text) {
+  const prompt = "Tu lis une recette de cuisine partagée sur Instagram. " +
+    (images.length ? "Les images jointes sont des captures d'écran du post (photo, légende, commentaires ou vidéo). " : "") +
+    "Réponds uniquement avec un objet JSON de cette forme :\n" +
+    '{"titre": "nom court de la recette", "auteur": "pseudo Instagram sans @, ou \\"\\"", "ingredients": ["200 g de farine", "..."], "etapes": ["...", "..."], "duree": "ex. 30 min, ou \\"\\"", "portions": "ex. 4 personnes, ou \\"\\"", "categorie": "une valeur parmi ' + CATEGORIES.join(", ") + '"}\n' +
+    "Écris en français. Une ligne par ingrédient avec sa quantité, une phrase claire par étape. N'invente rien : laisse vide ce qui n'apparaît pas." +
+    (text ? "\n\nTexte de la recette :\n" + text.slice(0, 20000) : "");
+  const x = await sample.json(prompt, images.length ? { images } : {});
+  const arr = v => Array.isArray(v) ? v.map(String).map(s => s.trim()).filter(Boolean) : [];
+  return { titre: String(x.titre || "").trim(), auteur: String(x.auteur || "").replace(/^@/, "").trim(), ingredients: arr(x.ingredients), etapes: arr(x.etapes),
+           duree: String(x.duree || "").trim(), portions: String(x.portions || "").trim(), categorie: CATEGORIES.includes(x.categorie) ? x.categorie : "" };
+}
+async function shrink(file, max = 1000) {
+  const bmp = await createImageBitmap(file);
+  const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+  const c = el("canvas", { width: Math.round(bmp.width * k), height: Math.round(bmp.height * k) });
+  c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+  return new Promise(res => c.toBlob(res, "image/jpeg", 0.82));
+}
+
+// ---------- Ajouter / modifier ----------
+function igCode(url) { const m = /instagram\.com\/(?:[\w.]+\/)?(?:p|reel|reels|tv)\/([\w-]+)/.exec(url || ""); return m ? m[1] : ""; }
+
+function form(r) {
+  const editing = !!r;
+  r = r || {};
+  const f = {
+    url: el("input", { type: "url", id: "f-url", value: r.url || "", placeholder: "https://www.instagram.com/reel/…", inputMode: "url" }),
+    text: el("textarea", { id: "f-text", placeholder: "Facultatif : colle ici le texte de la recette si tu l'as." }),
+    titre: el("input", { type: "text", id: "f-titre", value: r.titre || "" }),
+    auteur: el("input", { type: "text", id: "f-auteur", value: r.auteur || "", placeholder: "pseudo" }),
+    ingredients: el("textarea", { id: "f-ing", value: (r.ingredients || []).join("\n"), placeholder: "Un ingrédient par ligne", rows: 6 }),
+    etapes: el("textarea", { id: "f-etapes", value: (r.etapes || []).join("\n"), placeholder: "Une étape par ligne", rows: 6 }),
+    duree: el("input", { type: "text", id: "f-duree", value: r.duree || "", placeholder: "30 min" }),
+    portions: el("input", { type: "text", id: "f-portions", value: r.portions || "", placeholder: "4 personnes" }),
+    categorie: el("select", { id: "f-cat" }, el("option", { value: "", textContent: "Automatique" }), ...CATEGORIES.map(c => el("option", { value: c, textContent: c }))),
+  };
+  f.categorie.value = r.categorie || "";
+  let shots = [];
+  const shotBox = el("div", { className: "shots" });
+  const file = el("input", { type: "file", id: "f-shots", accept: "image/*", multiple: true });
+  file.onchange = async () => {
+    shots = [];
+    shotBox.replaceChildren();
+    for (const fl of [...file.files].slice(0, 5)) { const b = await shrink(fl, 1600); shots.push(b); shotBox.append(el("img", { src: URL.createObjectURL(b), alt: "" })); }
+    readBtn.disabled = !(shots.length || f.text.value.trim());
+  };
+  const keepPhoto = el("input", { type: "checkbox", id: "f-photo", checked: true });
+  const status = el("div", { className: "status", "aria-live": "polite" });
+  const readBtn = el("button", { type: "button", className: "primary", textContent: "Lire la recette avec Claude", disabled: true });
+  f.text.oninput = () => { readBtn.disabled = !(shots.length || f.text.value.trim()); };
+  readBtn.onclick = async () => {
+    readBtn.disabled = true; status.className = "status"; status.textContent = "Claude lit la recette… (jusqu'à une minute)";
+    try {
+      const x = await extract(canImages ? shots : [], f.text.value.trim());
+      if (x.titre) f.titre.value = x.titre;
+      if (x.auteur && !f.auteur.value) f.auteur.value = x.auteur;
+      if (x.ingredients.length) f.ingredients.value = x.ingredients.join("\n");
+      if (x.etapes.length) f.etapes.value = x.etapes.join("\n");
+      if (x.duree) f.duree.value = x.duree;
+      if (x.portions) f.portions.value = x.portions;
+      if (x.categorie) f.categorie.value = x.categorie;
+      status.textContent = "Fiche remplie. Vérifie et enregistre.";
+    } catch (e) { status.className = "status err"; status.textContent = sampleError(e); }
+    readBtn.disabled = false;
+  };
+  const saveBtn = el("button", { type: "button", className: "primary", textContent: "Enregistrer" });
+  saveBtn.onclick = async () => {
+    const lines = v => v.split("\n").map(s => s.replace(/^\s*(?:[-•*]|\d+[.)])\s*/, "").trim()).filter(Boolean);
+    const data = {
+      titre: f.titre.value.trim() || "Recette", auteur: f.auteur.value.replace(/^@/, "").trim(), url: f.url.value.trim(),
+      ingredients: lines(f.ingredients.value), etapes: lines(f.etapes.value), duree: f.duree.value.trim(), portions: f.portions.value.trim(), categorie: f.categorie.value,
+    };
+    if (!editing && f.text.value.trim()) data.legende = f.text.value.trim();
+    saveBtn.disabled = true; status.className = "status"; status.textContent = "Enregistrement…";
+    try {
+      if (keepPhoto.checked && shots.length && assets) {
+        try { data.image = (await assets.upload(await shrink(shots[0], 900))).id; } catch (e) { /* la fiche reste utile sans photo */ }
+      }
+      if (editing) { await db.doc("recettes/" + r.id).update(data); openDetail(r.id); return; }
+      const code = igCode(data.url);
+      const ref = db.collection("recettes").doc(code ? "ig-" + code : undefined);
+      if (code && recipes.some(x => x.id === ref.id)) { await ref.update(data); }
+      else await ref.set({ ...data, legende: data.legende || "", fav: false, testee: false, note: "", ajoute_le: new Date().toISOString() });
+      closeSheet();
+      if (recipes.some(x => x.id === ref.id)) openDetail(ref.id); else pendingOpen = ref.id;
+    } catch (e) {
+      status.className = "status err";
+      status.textContent = e && e.code === "invalid_argument" ? "Tu n'as que la lecture sur ce carnet : demande un accès « Éditeur »." : e && e.code === "quota_exceeded" ? "Le carnet est plein." : "Pas enregistré, réessaie.";
+      saveBtn.disabled = false;
+    }
+  };
+  const field = (label, input, hint) => el("label", { className: "field" }, el("span", { textContent: label }), input, hint ? el("span", { className: "hint", textContent: hint }) : null);
+  const out = [sheetTop(editing ? "Modifier la recette" : "Ajouter une recette")];
+  if (!editing) {
+    out.push(field("Lien Instagram", f.url, "Dans Instagram : Partager → Copier le lien."));
+    if (sample) {
+      out.push(field("Captures d'écran", file, canImages ? "La légende, la liste d'ingrédients ou une image de la vidéo. Jusqu'à 5." : "Claude ne peut pas lire d'images ici : colle plutôt le texte."),
+        shotBox, el("label", { className: "row hint" }, keepPhoto, "Utiliser la 1re image comme photo de la fiche"),
+        field("Texte", f.text), readBtn, status);
+    }
+  }
+  out.push(field("Titre", f.titre), el("div", { className: "two" }, field("Auteur", f.auteur), field("Catégorie", f.categorie)),
+    el("div", { className: "two" }, field("Durée", f.duree), field("Portions", f.portions)),
+    field("Ingrédients", f.ingredients), field("Étapes", f.etapes));
+  if (editing) out.push(field("Lien Instagram", f.url), status);
+  out.push(el("div", { className: "actions" }, saveBtn, el("button", { type: "button", className: "btn", textContent: "Annuler", onclick: () => editing ? openDetail(r.id) : closeSheet() })));
+  return out;
+}
+
+// ---------- Import depuis le signet ----------
+function importer() {
+  const ta = el("textarea", { id: "imp", rows: 6, placeholder: "Colle ici (appui long → Coller)" });
+  const status = el("div", { className: "status", "aria-live": "polite" });
+  const go = el("button", { type: "button", className: "primary", textContent: "Importer" });
+  go.onclick = async () => {
+    let list;
+    try { const d = JSON.parse(ta.value); list = Array.isArray(d) ? d : d.recettes; if (!Array.isArray(list)) throw 0; }
+    catch (e) { status.className = "status err"; status.textContent = "Ce texte ne vient pas du signet. Retouche « Exporter » sur instagram.com puis recolle."; return; }
+    go.disabled = true; status.className = "status";
+    const have = new Set(recipes.map(r => r.id));
+    let added = 0, skipped = 0;
+    for (const p of list) {
+      if (!p || !p.code) continue;
+      const id = "ig-" + String(p.code).replace(/[^\w-]/g, "");
+      if (have.has(id)) { skipped++; continue; }
+      const legende = String(p.legende || "");
+      const titre = String(p.titre || "") || legende.split("\n").map(l => l.replace(/#\w+|@[\w.]+/g, "").trim()).find(l => l.replace(/[\W_]/g, "").length >= 4) || "Recette";
+      try {
+        await db.collection("recettes").doc(id).set({ titre: titre.slice(0, 90), auteur: String(p.auteur || ""), url: String(p.url || ""), legende, ingredients: [], etapes: [],
+          duree: "", portions: "", categorie: "", fav: false, testee: false, note: "", ajoute_le: new Date(Date.now() - added).toISOString() });
+        added++; have.add(id);
+        status.textContent = added + " importée(s)…";
+      } catch (e) { status.className = "status err"; status.textContent = (e && e.code === "invalid_argument" ? "Tu n'as que la lecture sur ce carnet." : "Import interrompu") + " après " + added + " recette(s)."; go.disabled = false; return; }
+    }
+    status.textContent = added + " recette(s) importée(s)" + (skipped ? ", " + skipped + " déjà présente(s)" : "") + ".";
+    go.disabled = false;
+  };
+  return [sheetTop("Importer depuis Instagram"),
+    el("p", { className: "hint", style: "margin:0", textContent: "Sur instagram.com dans Safari, ouvre le carnet avec le signet, touche « Exporter » : la liste est copiée. Reviens ici et colle-la." }),
+    ta, el("div", { className: "actions" }, go), status,
+    el("p", { className: "hint", style: "margin:0", textContent: "Les recettes importées gardent leur légende. Ouvre-en une et touche « Mettre en fiche avec Claude » pour obtenir ingrédients et étapes." })];
+}
+
+// ---------- Événements ----------
+$("add").onclick = () => db ? openSheet(() => form(null)) : null;
+$("import-empty").onclick = () => openSheet(importer);
+$("rand").onclick = () => { const l = results(); if (l.length) openDetail(l[Math.floor(Math.random() * l.length)].id); };
+let qt;
+$("q").addEventListener("input", e => { const v = e.target.value; clearTimeout(qt); qt = setTimeout(() => { state.q = v; renderAll(); }, 120); });
+$("import").onclick = () => openSheet(importer);
+renderAll();
+boot();
+</script>

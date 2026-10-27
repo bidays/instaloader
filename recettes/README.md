@@ -4,7 +4,16 @@ Récupère les recettes que tu as **enregistrées** sur Instagram et génère `c
 une page unique, hors ligne, avec recherche (sans accents), filtres par catégorie /
 ingrédient / régime, favoris, notes perso, bouton « idée au hasard » et partage du lien.
 
-## Sur iPhone (sans ordinateur) : le signet Safari
+## Recommandé : l'app partagée « Nos recettes »
+
+`app.src.html` est une page publiée sur claude.ai (`python recettes/recettes.py app`
+génère `app.html`). Elle garde les recettes dans une base commune : ta femme et toi voyez
+les mêmes fiches, favoris, « testée » et notes. Pour ajouter une recette depuis l'iPhone :
+capture d'écran dans Instagram + Partager → Copier le lien, puis « Ajouter » dans l'app ;
+Claude lit la capture et remplit titre, ingrédients et étapes. Pour importer d'un coup la
+collection existante : bouton 📤 du signet Safari ci-dessous, puis « Importer » dans l'app.
+
+## Sur iPhone : le signet Safari
 
 `signet.txt` contient un signet (bookmarklet) à installer dans Safari. Sur instagram.com,
 connecté à ton compte, touche le signet : le carnet s'affiche par-dessus la page, lit ta

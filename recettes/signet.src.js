@@ -135,6 +135,7 @@ textarea { margin:0 16px 10px; width:calc(100% - 32px); min-height:56px; border-
     <div class="top">
       <input id="q" type="search" placeholder="Poulet curry, tiramisu, @auteur…" autocomplete="off">
       <button class="btn" id="rand" aria-label="Idée au hasard">🎲</button>
+      <button class="btn" id="exp" aria-label="Exporter vers Nos recettes">📤</button>
       <button class="btn" id="cfg" aria-label="Choisir la collection">⚙︎</button>
       <button class="btn" id="close" aria-label="Fermer">✕</button>
     </div>
@@ -307,6 +308,13 @@ textarea { margin:0 16px 10px; width:calc(100% - 32px); min-height:56px; border-
   $("q").addEventListener("input", e => { const v = e.target.value; clearTimeout(timer); timer = setTimeout(() => { state.q = v; render(); }, 120); });
   $("rand").onclick = () => { const l = results(); if (l.length) openRecipe(l[Math.floor(Math.random() * l.length)]); };
   $("cfg").onclick = chooseCollection;
+  // Copie la collection pour l'importer dans l'app partagée « Nos recettes ».
+  $("exp").onclick = async () => {
+    if (!recipes.length) { status("Rien à exporter pour l'instant."); return; }
+    const data = JSON.stringify({ recettes: recipes.map(r => ({ code: r.code, url: "https://www.instagram.com" + r.url, auteur: r.auteur, titre: r.titre, legende: r.legende })) });
+    try { await navigator.clipboard.writeText(data); status(recipes.length + " recettes copiées : colle-les dans « Nos recettes » → Importer."); }
+    catch (e) { status("Copie refusée par Safari, réessaie."); }
+  };
   $("close").onclick = () => { host.remove(); document.documentElement.style.overflow = ""; };
 
   window.__carnet = { show() { document.body.appendChild(host); document.documentElement.style.overflow = "hidden"; refresh(); } };
