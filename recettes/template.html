@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nos recettes</title>
+<style>
+:root {
+  --bg: #faf7f2; --card: #ffffff; --text: #2b2420; --muted: #8a7f76; --line: #ece5dc;
+  --accent: #c8553d; --accent-soft: #f6e3dc; --chip: #f1ebe3; --shadow: 0 1px 3px rgba(60,40,20,.08);
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #1b1816; --card: #262220; --text: #f1ebe5; --muted: #a39890; --line: #3a3430;
+          --accent: #e57a5f; --accent-soft: #3d2a24; --chip: #322c29; --shadow: none; }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+       font: 15px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+header { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line);
+         padding: 12px 16px 10px; }
+.top { display: flex; gap: 8px; align-items: center; max-width: 1200px; margin: 0 auto; }
+h1 { font-size: 20px; margin: 0 8px 0 0; white-space: nowrap; }
+#q { flex: 1; min-width: 0; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line);
+     background: var(--card); color: var(--text); font-size: 16px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+.btn { border: 1px solid var(--line); background: var(--card); border-radius: 12px; padding: 9px 12px; white-space: nowrap; }
+.filters { max-width: 1200px; margin: 10px auto 0; display: flex; gap: 6px; overflow-x: auto;
+           scrollbar-width: none; padding-bottom: 2px; }
+.filters::-webkit-scrollbar { display: none; }
+.chip { border: 0; background: var(--chip); border-radius: 999px; padding: 6px 12px; font-size: 13px; white-space: nowrap; }
+.chip.on { background: var(--accent); color: #fff; }
+.sep { width: 1px; background: var(--line); flex: none; margin: 0 4px; }
+main { max-width: 1200px; margin: 0 auto; padding: 14px 16px 40px; }
+.count { color: var(--muted); font-size: 13px; margin-bottom: 10px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+.card { background: var(--card); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow);
+        border: 1px solid var(--line); cursor: pointer; display: flex; flex-direction: column; position: relative; }
+.card img, .noimg { width: 100%; aspect-ratio: 4/5; object-fit: cover; background: var(--chip); display: block; }
+.noimg { display: grid; place-items: center; font-size: 40px; }
+.card .t { padding: 8px 10px 2px; font-weight: 600; font-size: 14px; display: -webkit-box;
+           -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card .a { padding: 0 10px 10px; color: var(--muted); font-size: 12px; }
+.badge { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,.55); color: #fff; border-radius: 8px;
+         padding: 2px 7px; font-size: 12px; }
+.fav { position: absolute; top: 6px; right: 6px; border: 0; background: rgba(0,0,0,.4); color: #fff;
+       border-radius: 50%; width: 32px; height: 32px; font-size: 16px; }
+.fav.on { background: var(--accent); }
+.empty { text-align: center; color: var(--muted); padding: 60px 0; }
+dialog { border: 0; padding: 0; border-radius: 18px; width: min(720px, calc(100vw - 24px)); max-height: calc(100vh - 24px);
+         background: var(--card); color: var(--text); }
+dialog::backdrop { background: rgba(0,0,0,.5); }
+.d-wrap { display: flex; flex-direction: column; max-height: calc(100vh - 24px); }
+.d-head { display: flex; gap: 14px; padding: 16px; border-bottom: 1px solid var(--line); }
+.d-head img { width: 110px; aspect-ratio: 4/5; object-fit: cover; border-radius: 10px; flex: none; }
+.d-head h2 { font-size: 18px; margin: 0 0 4px; }
+.d-meta { color: var(--muted); font-size: 13px; }
+.d-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.d-tags span { background: var(--accent-soft); border-radius: 999px; padding: 2px 9px; font-size: 12px; }
+.d-body { padding: 16px; overflow-y: auto; white-space: pre-wrap; word-wrap: break-word; }
+.d-body mark { background: #ffe58a; color: #000; border-radius: 3px; }
+.d-note { padding: 0 16px 12px; }
+.d-note textarea { width: 100%; min-height: 60px; border-radius: 10px; border: 1px solid var(--line);
+                   background: var(--bg); color: var(--text); padding: 8px 10px; font: inherit; }
+.d-actions { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--line); }
+.d-actions a, .d-actions .primary { background: var(--accent); color: #fff; text-decoration: none; border: 0;
+                                    border-radius: 12px; padding: 9px 14px; }
+.close { margin-left: auto; }
+footer { text-align: center; color: var(--muted); font-size: 12px; padding: 0 16px 30px; }
+@media (max-width: 520px) {
+  h1 { display: none; }
+  .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .d-head img { width: 84px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <h1>🍳 Nos recettes</h1>
+    <input id="q" type="search" placeholder="Rechercher : poulet curry, tiramisu, @auteur…" autocomplete="off">
+    <button class="btn" id="random" title="Une idée au hasard parmi les résultats">🎲</button>
+  </div>
+  <div class="filters" id="filters"></div>
+</header>
+<main>
+  <div class="count" id="count"></div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" hidden>Aucune recette ne correspond 🤷</div>
+</main>
+<footer>Carnet généré le __GENERE_LE__ · favoris et notes enregistrés sur cet appareil</footer>
+
+<dialog id="dlg">
+  <div class="d-wrap">
+    <div class="d-head">
+      <img id="d-img" alt="">
+      <div>
+        <h2 id="d-title"></h2>
+        <div class="d-meta" id="d-meta"></div>
+        <div class="d-tags" id="d-tags"></div>
+      </div>
+    </div>
+    <div class="d-body" id="d-body"></div>
+    <div class="d-note"><textarea id="d-note" placeholder="Nos notes (testée ? modifs ?…)"></textarea></div>
+    <div class="d-actions">
+      <a id="d-link" target="_blank" rel="noopener">Voir sur Instagram</a>
+      <button class="btn" id="d-share">Partager</button>
+      <button class="btn" id="d-fav"></button>
+      <button class="btn close" id="d-close">Fermer</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+const RECETTES = /*__RECETTES__*/[];
+
+const store = {
+  get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+let favs = new Set(store.get("recettes.favs", []));
+let notes = store.get("recettes.notes", {});
+const norm = s => (s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/œ/g, "oe");
+RECETTES.forEach(r => { r._s = norm([r.titre, r.legende, "@" + r.auteur, ...r.ingredients, ...r.categories, ...r.regimes].join(" ")); });
+
+const state = { q: "", filters: new Set(), favOnly: false };
+const $ = id => document.getElementById(id);
+
+function buildFilters() {
+  const count = {};
+  RECETTES.forEach(r => [...r.categories, ...r.regimes, ...r.ingredients].forEach(t => count[t] = (count[t] || 0) + 1));
+  const group = key => [...new Set(RECETTES.flatMap(r => r[key]))].sort((a, b) => count[b] - count[a]);
+  const el = $("filters");
+  const add = (label, on, fn) => {
+    const b = document.createElement("button");
+    b.className = "chip" + (on ? " on" : "");
+    b.textContent = label;
+    b.onclick = () => { fn(); buildFilters(); render(); };
+    el.appendChild(b);
+  };
+  el.innerHTML = "";
+  add(`❤️ Favoris (${favs.size})`, state.favOnly, () => state.favOnly = !state.favOnly);
+  for (const key of ["categories", "regimes", "ingredients"]) {
+    const tags = group(key);
+    if (!tags.length) continue;
+    const s = document.createElement("span"); s.className = "sep"; el.appendChild(s);
+    tags.forEach(t => add(`${t} ${count[t]}`, state.filters.has(t),
+      () => state.filters.has(t) ? state.filters.delete(t) : state.filters.add(t)));
+  }
+}
+
+function results() {
+  const words = norm(state.q).split(/\s+/).filter(Boolean);
+  return RECETTES.filter(r =>
+    (!state.favOnly || favs.has(r.code)) &&
+    [...state.filters].every(t => r.categories.includes(t) || r.regimes.includes(t) || r.ingredients.includes(t)) &&
+    words.every(w => r._s.includes(w) || norm(notes[r.code]).includes(w)));
+}
+
+function render() {
+  const list = results();
+  $("count").textContent = `${list.length} recette${list.length > 1 ? "s" : ""}` +
+    (list.length !== RECETTES.length ? ` sur ${RECETTES.length}` : "");
+  $("empty").hidden = list.length > 0;
+  const grid = $("grid");
+  grid.innerHTML = "";
+  const frag = document.createDocumentFragment();
+  for (const r of list) {
+    const c = document.createElement("div");
+    c.className = "card";
+    c.innerHTML = (r.thumb ? `<img loading="lazy" alt="">` : `<div class="noimg">🍽️</div>`) +
+      (r.video ? `<span class="badge">▶ Reel</span>` : "") +
+      `<button class="fav${favs.has(r.code) ? " on" : ""}" aria-label="Favori">♥</button>` +
+      `<div class="t"></div><div class="a"></div>`;
+    if (r.thumb) c.querySelector("img").src = r.thumb;
+    c.querySelector(".t").textContent = r.titre;
+    c.querySelector(".a").textContent = "@" + r.auteur;
+    c.querySelector(".fav").onclick = e => { e.stopPropagation(); toggleFav(r.code); };
+    c.onclick = () => open(r);
+    frag.appendChild(c);
+  }
+  grid.appendChild(frag);
+}
+
+function toggleFav(code) {
+  favs.has(code) ? favs.delete(code) : favs.add(code);
+  store.set("recettes.favs", [...favs]);
+  buildFilters(); render();
+  if (current && current.code === code) $("d-fav").textContent = favs.has(code) ? "♥ Retirer des favoris" : "♡ Favori";
+}
+
+let current = null;
+function open(r) {
+  current = r;
+  $("d-img").src = r.thumb || ""; $("d-img").hidden = !r.thumb;
+  $("d-title").textContent = r.titre;
+  $("d-meta").textContent = `@${r.auteur} · publié le ${r.date.split("-").reverse().join("/")}`;
+  $("d-tags").innerHTML = "";
+  [...r.categories, ...r.regimes, ...r.ingredients].forEach(t => {
+    const s = document.createElement("span"); s.textContent = t; $("d-tags").appendChild(s);
+  });
+  const body = $("d-body");
+  body.textContent = r.legende || "(pas de légende — la recette est sûrement dans la vidéo)";
+  highlight(body);
+  $("d-link").href = r.url;
+  $("d-note").value = notes[r.code] || "";
+  $("d-fav").textContent = favs.has(r.code) ? "♥ Retirer des favoris" : "♡ Favori";
+  $("dlg").showModal();
+  body.scrollTop = 0;
+}
+
+function highlight(el) {
+  const words = norm(state.q).split(/\s+/).filter(w => w.length > 2 && !w.startsWith("@"));
+  if (!words.length) return;
+  const text = el.textContent;
+  // Texte normalisé caractère par caractère, avec la position d'origine de chaque caractère.
+  let n = "", idx = [];
+  for (let i = 0; i < text.length; i++) { const c = norm(text[i]); n += c; for (const _ of c) idx.push(i); }
+  idx.push(text.length);
+  const marks = [];
+  words.forEach(w => { let i = 0; while ((i = n.indexOf(w, i)) !== -1) { marks.push([idx[i], idx[i + w.length - 1] + 1]); i += w.length; } });
+  if (!marks.length) return;
+  marks.sort((a, b) => a[0] - b[0]);
+  el.textContent = "";
+  let pos = 0;
+  for (const [s, e] of marks) {
+    if (s < pos) continue;
+    el.append(text.slice(pos, s));
+    const m = document.createElement("mark"); m.textContent = text.slice(s, e); el.append(m);
+    pos = e;
+  }
+  el.append(text.slice(pos));
+}
+
+$("d-note").oninput = e => {
+  if (!current) return;
+  e.target.value ? notes[current.code] = e.target.value : delete notes[current.code];
+  store.set("recettes.notes", notes);
+};
+$("d-fav").onclick = () => current && toggleFav(current.code);
+$("d-close").onclick = () => $("dlg").close();
+$("dlg").addEventListener("click", e => { if (e.target === $("dlg")) $("dlg").close(); });
+$("d-share").onclick = async () => {
+  const text = `${current.titre}\n${current.url}`;
+  try {
+    if (navigator.share) await navigator.share({ title: current.titre, url: current.url });
+    else { await navigator.clipboard.writeText(text); $("d-share").textContent = "Lien copié ✓"; setTimeout(() => $("d-share").textContent = "Partager", 1500); }
+  } catch {}
+};
+let t;
+$("q").addEventListener("input", e => { clearTimeout(t); t = setTimeout(() => { state.q = e.target.value; render(); }, 120); });
+$("random").onclick = () => { const l = results(); if (l.length) open(l[Math.floor(Math.random() * l.length)]); };
+
+buildFilters();
+render();
+</script>
+</body>
+</html>
